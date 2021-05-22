@@ -72,38 +72,46 @@ const checkTheApp = async () => {
     "https://www.nhs.uk/book-a-coronavirus-vaccination/do-you-have-an-nhs-number";
   await page.goto(link);
 
-  await page.waitForSelector("#option_Yes_input");
-  await page.click("#option_Yes_input");
-  await page.click("#submit-button");
-
-  await page.waitForSelector('input[name="NhsNumber"]');
-  await page.click('input[name="NhsNumber"]');
-  await page.type('input[name="NhsNumber"]', nhsNumber);
-  await page.click("#submit-button");
-
-  await page.waitForSelector("#Date_Day");
-  await page.type("#Date_Day", day);
-  await page.type("#Date_Month", month);
-  await page.type("#Date_Year", year);
-  await page.click("#submit-button");
-
   try {
-    await page.waitForSelector("#option_HealthWorker_input");
-    console.log("Not yet");
-    return;
-  } catch {
-    console.log("GOGO");
-    if (webhookURL) {
-      await callWebhook(webhookURL);
+    await page.waitForSelector("#option_Yes_input", { timeout: 300000 });
+    await page.click("#option_Yes_input");
+    await page.click("#submit-button");
+
+    await page.waitForSelector('input[name="NhsNumber"]');
+    await page.click('input[name="NhsNumber"]');
+    await page.type('input[name="NhsNumber"]', nhsNumber);
+    await page.click("#submit-button");
+
+    await page.waitForSelector("#Date_Day");
+    await page.type("#Date_Day", day);
+    await page.type("#Date_Month", month);
+    await page.type("#Date_Year", year);
+    await page.click("#submit-button");
+
+    try {
+      await page.waitForSelector("#option_HealthWorker_input");
+      console.log("Not yet");
+      return;
+    } catch {
+      console.log("GOGO");
+      if (webhookURL) {
+        await callWebhook(webhookURL);
+      }
+      process.exit(0);
     }
-    process.exit(0);
+  } catch (err) {
+    await page.waitForSelector("#queuePosition");
+    let element = await page.$("#queuePosition");
+    let value = await page.evaluate((el) => el.textContent, element);
+    console.error("You're probably in a queue, number: ", value);
+    return;
   }
 };
 
 const scheduler = new ToadScheduler();
 
 const task = new AsyncTask(
-  "Check Every 2 Hours",
+  "Check Every N Hours",
   () => {
     return checkTheApp();
   },
