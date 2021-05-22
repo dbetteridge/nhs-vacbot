@@ -1,0 +1,21 @@
+{
+  "name": "nhsbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node vaccine.js"
+  },
+  "author": "DB",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "node-fetch": "^2.6.1",
+    "node-webhooks": "^1.4.2",
+    "puppeteer": "^9.1.1",
+    "puppeteer-core": "^9.1.1",
+    "toad-scheduler": "^1.2.0"
+  },
+  "type": "module"
+}
