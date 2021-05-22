@@ -2,6 +2,7 @@ import puppeteer from "puppeteer-core";
 import toad from "toad-scheduler";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import { readFile } from "fs/promises";
 
 dotenv.config({ path: ".env" });
 
@@ -23,31 +24,29 @@ if (isNaN(date)) {
   throw new Error("Valid DOB is required");
 }
 
-const callWebhook = async (url) => {
-  const content = {
-    username: "VACBOT",
-    avatar_url: "",
-    embeds: [
-      {
-        title: "Update on NHS Booking",
-        color: 3329330,
-        thumbnail: {
-          url: "",
-        },
-        fields: [
-          {
-            name: "Its HAPPENING",
-            value: "GOGO",
-            inline: true,
-          },
-        ],
-      },
-    ],
-  };
+const content = await readFile("./content.json").then((data) =>
+  JSON.parse(data.toString())
+);
+
+const positiveContent = {
+  username: content.username,
+  avatar_url: content.avatar_url,
+  content: content.positive,
+};
+
+const negativeContent = {
+  username: content.username,
+  avatar_url: content.avatar_url,
+  content: content.negative,
+};
+
+const callWebhook = async (url, done = false) => {
   return fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(content),
+    body: !done
+      ? JSON.stringify(negativeContent)
+      : JSON.stringify(positiveContent),
   })
     .then((response) => response)
     .catch((err) => {
@@ -91,11 +90,14 @@ const checkTheApp = async () => {
     try {
       await page.waitForSelector("#option_HealthWorker_input");
       console.log("Not yet");
-      return;
-    } catch {
-      console.log("GOGO");
       if (webhookURL) {
         await callWebhook(webhookURL);
+      }
+      return;
+    } catch (err) {
+      console.log("GOGO");
+      if (webhookURL) {
+        await callWebhook(webhookURL, true);
       }
       process.exit(0);
     }
