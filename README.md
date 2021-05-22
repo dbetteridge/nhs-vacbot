@@ -14,7 +14,7 @@
 WEBHOOK_URL=https://discord.com/api/webhooks/SECRET
 NHS_NUMBER=723263xxxx
 DOB=dd/mm/yyyy
-INTERVAL=1
+INTERVAL=4
 PERIOD=hours
 ```
 
